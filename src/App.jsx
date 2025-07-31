@@ -21,21 +21,33 @@
 // Per ciascuno dei campi validati in tempo reale, mostrare un messaggio di errore (rosso) nel caso non siano validi, 
 // oppure un messaggio di conferma (verde) nel caso siano validi.
 
-import { useState, useMemo } from 'react';
+
+// Non tutti i campi del form necessitano di essere aggiornati a ogni carattere digitato. 
+// Alcuni di essi non influenzano direttamente l’interfaccia mentre l’utente li compila, quindi è possibile gestirli in modo più efficiente.
+// Analizza il form: Identifica quali campi devono rimanere controllati 
+// e quali invece possono essere non controllati senza impattare l’esperienza utente.
+// Converti i campi non controllati: Usa useRef() per gestirli e recuperare il loro valore solo al momento del submit.
+// Assicurati che la validazione continui a funzionare: Anche se un campo non è controllato, 
+// deve comunque essere validato correttamente quando l’utente invia il form.
+
+import { useState, useMemo, useRef } from 'react';
 
 const letters = "abcdefghijklmnopqrstuvwxyz";
 const numbers = "0123456789";
 const symbols = "!@#$%^&*()-_=+[]{}|;:'\\,<>?/`~";
 
 function App() {
-
-  const [fullName, setFullName] = useState("Luca"); 
+  // campi controllati con useState
   const [username, setUsername] = useState("LucaIap");
   const [password, setPassword] = useState("Password");
-  const [specialization, setSpecialization] = useState("frontend");
-  const [experience, setExperience] = useState("1");
   const [description, setDescription] = useState("Sono uno studente Boolean");
 
+  // campi non controllati 
+  const fullNameRef = useRef();
+  const specializationRef = useRef();
+  const experienceRef = useRef();
+
+  // validazione dei campi non controllati
   const isUsernameValid = useMemo(() => {                                        // Validazione dell'username
     const charsValid = username.split("").every(char =>                          // verifica se ogni carattere è valido
       letters.includes(char.toLowerCase()) || numbers.includes(char)             // controlla se il carattere è una lettera o un numero
@@ -62,9 +74,13 @@ function App() {
     );
   }, [description])                                                              // dipendenza dalla descrizione
     
-
+  // funzione per gestire il submit del form
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const fullName = fullNameRef.current.value;                           // recupera il valore del nome completo
+    const specialization = specializationRef.current.value;               // recupera il valore della specializzazione
+    const experience = experienceRef.current.value;                       // recupera il valore degli anni di esperienza e lo converte in numero
     if (
       !fullName || 
       !username || 
@@ -76,7 +92,8 @@ function App() {
       console.log('Per favore, compila tutti i campi.')
       return;
     }
-   console.log('Registrazione utente:',
+
+    console.log('Registrazione utente:',
       {
         fullName,
         username,
@@ -85,7 +102,7 @@ function App() {
         experience,
         description
       }
-   );
+    );
    
   }
 
@@ -96,8 +113,7 @@ function App() {
           <p>Nome completo:</p>
           <input 
             type='text' 
-            value={fullName} 
-            onChange={(e) => setFullName(e.target.value)} 
+            ref={fullNameRef}
           />
         </label>
         <label>
@@ -117,10 +133,9 @@ function App() {
           <p>Specializzazione:</p>
           <select 
             type='text' 
-            value={specialization} 
-            onChange={(e) => setSpecialization(e.target.value)} 
+            ref={specializationRef}
           >
-            <option value=''>Seleziona specializzazione</option>
+            <option value=''>Seleziona</option>
             <option value='Full Stack'>Full Stack</option>
             <option value='Frontend'>Frontend</option>
             <option value='Backend'>Backend</option>
@@ -145,8 +160,7 @@ function App() {
             type="number" 
             min="0"
             max="50"
-            value={experience} 
-            onChange={(e) => setExperience(e.target.value)} 
+            ref={experienceRef}
           />
         </label>
         <label>
