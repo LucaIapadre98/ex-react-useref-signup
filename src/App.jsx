@@ -90,7 +90,9 @@ function App() {
         <label>
           <p>Esperienze:</p>
           <input 
-            type='number' 
+            type="number" 
+            min="0"
+            max="50"
             value={experience} 
             onChange={(e) => setExperience(e.target.value)} 
           />
